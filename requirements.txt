@@ -1,0 +1,5 @@
+streamlit-aggrid
+streamlit
+pandas
+click==8
+plotly

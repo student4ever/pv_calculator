@@ -1,0 +1,97 @@
+# change to True if you are using a proxy. In this case you have to set the Windows environment variables
+# HTTP_PROXY and HTTPS_PROXY. To check try to type:
+# > import os
+# > os.getenv('HTTP_PROXY')
+
+path: fig/
+
+dpi: 500
+
+figsize: # default figure size width and heigth
+  - 12
+  - 6
+
+colors:
+  MVA: '#FBB299'
+  MVA CC: '#82655b'
+  KWK: '#c44e52'
+  HWK: '#ccb974'
+  E-Heizer: '#A3ABC3'
+  Waermepumpen: '#0173b2'
+  Wärmepumpen: '#0173b2'
+  Abwärme: '#838f8d'
+  Umweltwärme: '#55a868'
+  Biomasse: '#6e9677'
+  EAU: "#FF5733"
+  BMK: '#55a868'
+  Solarthermie: '#FBFB9B'
+  Geothermie: '#d55e00'
+  Geothermie_HD: '#fc913d'
+  Geothermie_AK: '#914000'
+  FW_Speicher: '#c744b8'
+  Speicher: '#c744b8'
+  ATES: '#9c5195'
+  PTES: '#543e52'
+  Speicher ATES: '#9c5195'
+  Speicher PTES: '#543e52'
+  Infrastruktur: 'grey'
+  Pumpstrom: 'darkgrey'
+  Netz und Infrastruktur: '#44474D'
+  Netzanbindung: '#715aff'
+  OMV: 'darkblue'
+  OMV_Band: 'darkblue'
+  OMV_Ueberband: 'lightblue'
+  OMV_Direkteinspeisung: 'brightblue'
+  OMV_Abwaerme: 'blue'
+  Gesamtmenge: 'black'
+  # Market participants
+  Wien Energie GmbH: "#ff8000"
+  Verbund AG: "#0b4883"
+  EVN AG: "#000000" #c40809
+  Linz AG: "#ef233c" #06518f
+  Linz Strom Gas Wärme GmbH: "#636c6d" #06518f
+  Salzburg AG: "#e52329" #232021
+  voestalpine: "#59a2c0"
+  Energie AG: "#992928"
+  # Technology
+  Biomass: "#467850"
+  Fossil Brown coal/Lignite: "#402926"
+  Fossil Gas: "#F24333"
+  Fossil Hard coal: "#000000"
+  Fossil Oil: "#A26E67"
+  Geothermal: "#ff8566"
+  Hydro Pumped Storage: "#003452"
+  Hydro Run-of-river and poundage: "#004E7A"
+  Hydro Water Reservoir: "#4D86B8"
+  Nuclear: "#5f605c"
+  Other: "#595959"
+  Other renewable: "#6eaa7a"
+  Waste: "#6d4289"
+  Wind Offshore: "#47A9FF"
+  Wind Onshore: "#0083F5"
+  # Technology (german)
+  Kohle: "#000000"
+  Gas: "#F24333"
+  Erdgas: "#F24333"
+  Heizöl: "#A26E67"
+  Oel: "#A26E67"
+  Strom: "#0173b2"
+  Stromverdrängung: "darkblue"
+  Sonstige Erneuerbare: "#6eaa7a"
+  Speicher- und Pumpspeicher: "#4D86B8"
+  Laufwasser: "#004E7A"
+  Kernkraft: "#5f605c"
+  Sonstige: "#595959"
+  Solar: "#ffd744"
+  Wind: "#0083F5"
+  # added
+  Sim1 GT41/GT42/DT: "#0083F5"
+  Sim3 GT/DT: "#0083F5"
+  Do3: "#0083F5"
+  # Results
+  "Erneuerbarer Anteil": "#43aa8b"
+  "Nicht erneuerbarer Anteil": "#f8961e"
+  "Fixe Kosten KWK": "#2c7da0"
+  "Variable Kosten KWK": "#014f86"
+  "Fixe Kosten ohne KWK": "#d00000"
+  "Variable Kosten ohne KWK": "#6a040f"
