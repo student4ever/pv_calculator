@@ -64,6 +64,7 @@ with tab3:
 # - miete
 # - gebühren
 # - fremdfinanzierung
+# - download als csv
 
 st.markdown("## Ergebnis")
 
