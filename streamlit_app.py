@@ -1,158 +1,113 @@
 import streamlit as st
-from src.functions import calculate_solar_pv_economics
+from src.functions import *
 from src.utils import *
 import plotly.graph_objects as go
 
 st.set_page_config(
     layout="centered", page_icon="⚡", page_title="PV App"
 )
-st.title("⚡ Photovolataik Rechner | HOLZINGER.TAX")
+st.title("⚡ Photovoltaik Rechner | HOLZINGER.TAX")
 
-# Load the data
-if 0:
-    sheet_id = "1ZRFcyil83dX7jwTFI37AS8zjvrwBinAMwQ8ZMkQnu8s"
+# Description
+with st.expander("Beschreibung"):
+    st.markdown("""
+        Der Rechner berechnet die Wirtschaftlichkeit einer Photovolatikanlage für einen Verbraucher. 
+        Er berücksichtigt dynamische wirtschaftliche Analysen wie den Zinssatz und die Abschreibung. 
+        Zudem wird die Eigenverbrauchsquote in Betracht gezogen. 
+        Basierend auf den angegebenen Parametern und Eingabedaten wird der **Nettobarwert (NPV)**, der **interne Zinssatz (IRR)** und die **Amortisationszeit**  der Photovoltaikanlage ermittelt.
 
-    sheet_name = "app_text"
-    url = f"https://docs.google.com/spreadsheets/d/{sheet_id}/gviz/tq?tqx=out:csv&sheet={sheet_name}"
-    total_text = pd.read_csv(url, index_col=[0], header=[0])
-
-    sheet_name = "app_data"
-    url = f"https://docs.google.com/spreadsheets/d/{sheet_id}/gviz/tq?tqx=out:csv&sheet={sheet_name}"
-    total_data = pd.read_csv(url, index_col=[0], decimal=",")
+        Der Rechner summiert die erwarteten Einnahmen und Ausgaben im Laufe der Lebensdauer der Photovoltaikanlage. 
+        Hierbei werden der Stromverkauf (Netzeinspeisung), die eingesparten Stromkosten durch Eigenverbrauch und mögliche Förderungen oder Steuervorteile berücksichtigt. 
+        
+        Anschließend werden die Barwerte der Cashflows unter Berücksichtigung des Diskontierungssatzes berechnet, um den NPV zu ermitteln.
+    
+        Der Rechner hilft die Rentabilität der Solaranlage abzuschätzen und fundierte Entscheidungen über die Investition in erneuerbare Energien zu treffen.
+    """)
 
 # input data
-st.markdown("## Technische Annahmen")
+st.markdown("## Annahmen")
+number_of_simulation = st.radio(label="Anzahl an Szenarien", options=[1, 2, 3])
+# array of dicts for the input
+inputs = [dict() for x in range(number_of_simulation)]
 
-pv_power = st.number_input(
-        label="Größe der PV Anlage in kW",
-        value=10,
-    )
+tab1, tab2, tab3 = st.tabs(["Technisch", "Wirtschaftlich", "Steuerlich"])
 
-annual_fullload_hours = st.number_input(
-        label="Volllaststunden im Jahr",
-        value=1000,
-    )
+with tab1:
+    st.markdown("Technische Annahmen")
 
-annual_electricity_production = annual_fullload_hours * pv_power
+    cols = st.columns(number_of_simulation)
+    for c, i in zip(cols, range(number_of_simulation)):
+        with c:
+            d = get_technical_inputs(c)
+            inputs[i] = {**inputs[i], **d}
 
-annual_power_consumption = st.number_input(
-        label="Eigener Stromverbrauch in kWh",
-        value=2000,
-    )
 
-self_consumption_rate = st.number_input(
-        label="Eigenverbrauchsgrad in %",
-        value=10,
-    )/100
+with tab2:
+    st.markdown("Wirtschafliche Annahmen")
 
-st.markdown("## Ökonomische Annahmen")
-system_cost = st.number_input(
-        label="Kosten der Anlage in EUR",
-        value=10000,
-    )
+    cols = st.columns(number_of_simulation)
+    for c, i in zip(cols, range(number_of_simulation)):
+        with c:
+            d = get_economic_inputs(c)
+            inputs[i] = {**inputs[i], **d}
 
-lifetime = st.number_input(
-        label="Lebensdauer der Anlage in Jahren",
-        value=20,
-    )
+with tab3:
+    st.markdown("Steuerlichen Annahmen")
 
-depreciation_rate = 1/ st.number_input(
-        label="Abschreibedauer der Anlage in Jahren",
-        value=20,
-    )
-
-electricity_rate = st.number_input(
-        label="Kosten des Netzbezugs in EUR/kWh",
-        value=0.15,
-    )
-
-feed_in_tarif = st.number_input(
-        label="Einspeisetarif in EUR/kWh",
-        value=0.1,
-    )
-
-interest_rate = st.number_input(
-        label="Zinssatz in %",
-        value=5,
-    )/100
-
-st.markdown("## Steuerlichen Annahmen")
-tax_power_threshold = st.number_input(
-        label="Schwellewert Leistung in kWp",
-        value=25,
-    )
-
-tax_feedin_threshold = st.number_input(
-        label="Schwellewert Einspeisemenge in kWh",
-        value=12500,
-    )
-
-tax_rate = st.number_input(
-        label="Grenzsteuersatz in %",
-        value=42,
-    )/100
-
+    cols = st.columns(number_of_simulation)
+    for c, i in zip(cols, range(number_of_simulation)):
+        with c:
+            d = get_tax_inputs(c)
+            inputs[i] = {**inputs[i], **d}
 
 # to do
 # - miete
 # - gebühren
 # - fremdfinanzierung
-# - cumulated tax base
 
 st.markdown("## Ergebnis")
-e = calculate_solar_pv_economics(system_cost, pv_power, annual_electricity_production, electricity_rate, feed_in_tarif,
-                                         interest_rate, depreciation_rate, self_consumption_rate, lifetime,
-                                         tax_power_threshold, tax_feedin_threshold, tax_rate)
 
+economics = [dict() for x in range(number_of_simulation)]
 
-def format_german_nb(number, decimal=0, unit="EUR"):
-    if decimal == 0:
-        str_format = "{:,.0f} {}".format(float(number), unit)
-    elif decimal == 1:
-        str_format = "{:,.1f} {}".format(float(number), unit)
-    else:
-        str_format = "{:,.2f} {}".format(float(number), unit)
-    mystr = str_format.replace(",", ' ').replace(".", ',')
-    return mystr
+scenario_names = ["Szenario {}".format((int(x+1))) for x in range(number_of_simulation)]
 
-col1, col2, col3 = st.columns(3)
-col1.metric("Nettobarwert", format_german_nb(format(e["npv"]), 0, "EUR"), )
-col2.metric("Amortisierungszeit", format_german_nb(format(e["payback_period"]), 0, "Jahre"), )
-col3.metric("IRR", format_german_nb(format(e["irr"]*100), 2, "%"), )
+cumulative_ncf = pd.DataFrame(columns=scenario_names)
+for i in range(number_of_simulation):
+    economics[i] = calculate_solar_pv_economics(**inputs[i])
+    cumulative_ncf.iloc[:, i] = economics[i]["net_cash_flows"].sum(axis="columns").cumsum()
 
+if number_of_simulation > 1:
+    fig_and_link(
+        cumulative_ncf / 1e3,
+        title="Entwicklung des Netto-Cash-Flows aller Szenarien", unit="Tausend EUR", kind="line",
+        download_link=False
+    )
 
-# Print the results
-st.markdown("### Gesamtergebnis")
-ncf = e["net_cash_flows"]
+result_tabs = st.tabs(scenario_names)
 
-fig_and_link(
-    ncf/1e3,
-    add_on={
-        "line": {"data": ncf.sum(axis="columns").cumsum()/1e3,
-                 "name": "Kummulierter Netto-Cash-Flow", "color": "darkred", "width": 2},
-    },
-    title="Entwicklung des Netto-Cash-Flows", unit="Tausend EUR", kind="bar-stacked"
-)
+for result_tab, i in zip(result_tabs, range(number_of_simulation)):
+    with result_tab:
+        show_one_scenario(economics[i], result_tab)
 
-st.text("Ergebnis der Investitionsrechnung")
-st.table(ncf.fillna(0))
-
-
-st.markdown("### Steuerlich")
-tax_bases = e["tax_bases"]
-
-fig_and_link(
-    tax_bases.cumsum()/1e3,
-    title="Entwicklung der kummulativen steuerlichen Bemessungsgrundlage", unit="Tausend EUR", kind="bar"
-)
-import locale
-
-# Set the German locale
-locale.setlocale(locale.LC_ALL, 'de_DE')
-
-formatted_df = tax_bases.fillna(0).cumsum().to_frame().applymap(lambda x: locale.format_string("%.2f", x))
-st.table(formatted_df)
-
-st.table(tax_bases.fillna(0).cumsum().to_frame("Steuerliche Bemessungsgrundlage").style.format("{:,.0f}"))
-
-
+with st.expander("Haftungsausschluss"):
+    st.markdown("""
+        Die Nutzung dieser App erfolgt auf eigene Gefahr. 
+        Wir übernehmen keinerlei Verantwortung oder Haftung für eventuelle Schäden, die durch die Verwendung dieser App entstehen könnten. 
+        Dieser Haftungsausschluss gilt für alle Funktionen, Inhalte und Informationen innerhalb der App.
+        
+        Die in dieser App bereitgestellten Informationen dienen ausschließlich zu Informationszwecken. 
+        Wir bemühen uns, genaue und aktuelle Informationen bereitzustellen, können jedoch keine Gewähr für die Richtigkeit, Vollständigkeit oder Aktualität der Informationen übernehmen.
+        
+        Diese App stellt keine Rechts-, Finanz- oder technische Beratung dar. 
+        Sie sollte nicht als Ersatz für professionelle Beratung oder Fachkenntnisse herangezogen werden. 
+        Wir empfehlen Ihnen dringend, sich bei Bedarf von qualifizierten Fachleuten beraten zu lassen.
+        
+        Wir haften nicht für etwaige Verluste, Schäden oder Konsequenzen, die sich aus der Nutzung dieser App ergeben. 
+        Dies schließt direkte, indirekte, zufällige, besondere oder Folgeschäden ein, auch wenn wir auf die Möglichkeit solcher Schäden hingewiesen wurden.
+        
+        Wir behalten uns das Recht vor, den Inhalt dieser App jederzeit und ohne vorherige Ankündigung zu ändern, zu aktualisieren oder zu entfernen.
+        
+        Durch die Nutzung dieser App erklären Sie sich damit einverstanden, dass Sie alle Risiken im Zusammenhang mit der Nutzung dieser App tragen und uns von jeglicher Haftung freistellen.
+        
+        Bitte konsultieren Sie bei spezifischen Fragen oder Bedenken einen Rechts- oder Fachexperten, um eine sachkundige Beratung zu erhalten.
+    """)

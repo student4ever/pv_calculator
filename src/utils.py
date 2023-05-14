@@ -25,7 +25,7 @@ def get_st_download_link(df, name="data"):
     # st.markdown(get_table_download_link_csv(df), unsafe_allow_html=True)
 
 
-def fig_and_link(df, add_on=None, **kwargs):
+def fig_and_link(df, add_on=None, download_link=True, **kwargs):
     """
     Make a plot and
     Args:
@@ -94,28 +94,29 @@ def fig_and_link(df, add_on=None, **kwargs):
 
     st.plotly_chart(fig, use_container_width=use_container_width)
 
-    from io import BytesIO
-    # Create an in-memory buffer
-    import io
+    if download_link:
+        from io import BytesIO
+        # Create an in-memory buffer
+        import io
 
-    buffer = io.BytesIO()
+        buffer = io.BytesIO()
 
-    # Save the figure as a pdf to the buffer
-    fig.write_image(file=buffer, format="svg", width=600, height=500) # width=600, height=350
+        # Save the figure as a pdf to the buffer
+        fig.write_image(file=buffer, format="svg", width=600, height=500) # width=600, height=350
 
-    st.download_button(
-        label="Download SVG",
-        data=buffer,
-        file_name="figure.svg",
-        mime="application/svg",
-    )
+        st.download_button(
+            label="Download SVG",
+            data=buffer,
+            file_name="figure.svg",
+            mime="application/svg",
+        )
 
-    try:
-        name = kwargs["title"] + " in " + kwargs["unit"]
-    except KeyError:
-        name = "data"
+        try:
+            name = kwargs["title"] + " in " + kwargs["unit"]
+        except KeyError:
+            name = "data"
 
-    get_st_download_link(df, name)
+        get_st_download_link(df, name)
 
 
 def get_trend_of_ts(df):
