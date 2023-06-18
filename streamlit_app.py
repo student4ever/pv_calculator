@@ -24,11 +24,20 @@ with st.expander("Beschreibung"):
         Der Rechner hilft die Rentabilität der Solaranlage abzuschätzen und fundierte Entscheidungen über die Investition in erneuerbare Energien zu treffen.
     """)
 
+import streamlit as st
+from PIL import Image
+
+image = Image.open('schema.png')
+
+st.image(image, caption='Sunrise by the mountains')
+
+
 # input data
 st.markdown("## Annahmen")
 number_of_simulation = st.radio(label="Anzahl an Szenarien", options=[1, 2, 3])
 # array of dicts for the input
 inputs = [dict() for x in range(number_of_simulation)]
+colors_scenarios = ["blue", "orange", "green"]
 
 tab1, tab2, tab3 = st.tabs(["Technisch", "Wirtschaftlich", "Steuerlich"])
 
@@ -36,9 +45,9 @@ with tab1:
     st.markdown("Technische Annahmen")
 
     cols = st.columns(number_of_simulation)
-    for c, i in zip(cols, range(number_of_simulation)):
+    for c, i, color in zip(cols, range(number_of_simulation), colors_scenarios):
         with c:
-            d = get_technical_inputs(c)
+            d = get_technical_inputs(c, color)
             inputs[i] = {**inputs[i], **d}
 
 
@@ -46,18 +55,18 @@ with tab2:
     st.markdown("Wirtschafliche Annahmen")
 
     cols = st.columns(number_of_simulation)
-    for c, i in zip(cols, range(number_of_simulation)):
+    for c, i, color in zip(cols, range(number_of_simulation), colors_scenarios):
         with c:
-            d = get_economic_inputs(c)
+            d = get_economic_inputs(c, color)
             inputs[i] = {**inputs[i], **d}
 
 with tab3:
     st.markdown("Steuerlichen Annahmen")
 
     cols = st.columns(number_of_simulation)
-    for c, i in zip(cols, range(number_of_simulation)):
+    for c, i, color in zip(cols, range(number_of_simulation), colors_scenarios):
         with c:
-            d = get_tax_inputs(c)
+            d = get_tax_inputs(c, color)
             inputs[i] = {**inputs[i], **d}
 
 # to do

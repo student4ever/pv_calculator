@@ -46,11 +46,26 @@ def fig_and_link(df, add_on=None, download_link=True, **kwargs):
         df = df.to_frame(name=name)
 
     try:
+        unit = kwargs["unit"]
+    except KeyError:
+        unit = ""
+    try:
+        resampling = kwargs["resampling"]
+    except KeyError:
+        resampling = "1Y"
+
+    try:
         use_container_width = kwargs["use_container_width"]
     except KeyError:
         use_container_width = True
 
     fig = p(df, **kwargs)
+
+    from .plot import hover_datetime_format
+
+    hovertemplate = \
+        "%{x|" + hover_datetime_format(resampling) + "}<br>" + \
+        "%{" + "y:,.2f" + "} " + unit + "<br>"
 
     if add_on is not None:
         for i in add_on:
@@ -62,7 +77,7 @@ def fig_and_link(df, add_on=None, download_link=True, **kwargs):
                     y=d["data"],
                     name=d["name"],
                     # text=d["name"],
-                    # hovertemplate=hovertemplate,
+                    hovertemplate=hovertemplate,
                     line_color=d["color"],
                     line_width=d["width"],
                 ))
@@ -72,7 +87,7 @@ def fig_and_link(df, add_on=None, download_link=True, **kwargs):
                     y=d["data"],
                     name=d["name"],
                     # text=d["name"],
-                    # hovertemplate=hovertemplate,
+                    hovertemplate=hovertemplate,
                     line_color=d["color"],
                     line_width=d["width"],
                     line_shape='hvh',
@@ -84,7 +99,7 @@ def fig_and_link(df, add_on=None, download_link=True, **kwargs):
                     name=d["name"],
                     fill='tonexty',
                     # text=d["name"],
-                    # hovertemplate=hovertemplate,
+                    hovertemplate=hovertemplate,
                     line_color=d["color"],
                     line_width=d["width"],
                 ))

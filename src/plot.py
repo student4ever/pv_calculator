@@ -233,7 +233,7 @@ class Plot(object):
         elif my_max < 1000:
             y_format = "y:,.1f"
         else:
-            y_format = "y:,.0f"
+            y_format = "y:,.2f"
 
         # Check resolution and put the dots in the middle of the plot (only supported for dataframes)
         settings = {}
@@ -284,7 +284,7 @@ class Plot(object):
                     y=data_column,
                     name=c,
                     # text=c,
-                    # hovertemplate=hovertemplate,
+                    hovertemplate=hovertemplate,
                     **settings
                 ))
 
@@ -326,7 +326,7 @@ class Plot(object):
                     y=data_column,
                     name=c,
                     text=c,
-                    # hovertemplate=hovertemplate,
+                    hovertemplate=hovertemplate,
                     **settings
                 ))
 
@@ -344,7 +344,7 @@ class Plot(object):
                     y=data_column,
                     name=c,
                     text=c,
-                    # hovertemplate=hovertemplate,
+                    hovertemplate=hovertemplate,
                     mode="markers",
                     **settings
                 ))
@@ -364,7 +364,7 @@ class Plot(object):
                     y=data_column,
                     name=c,
                     text=c,
-                    # hovertemplate=hovertemplate,
+                    hovertemplate=hovertemplate,
                     mode='lines',
                     **settings
                 ))

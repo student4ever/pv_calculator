@@ -4,22 +4,34 @@ import streamlit as st
 from .utils import fig_and_link
 
 
-def get_technical_inputs(col):
+def get_color_pre_and_post_str(color):
+    if color is not None:
+        return ":{}[".format(color), "]"
+    else:
+        return "", ""
+
+
+def get_technical_inputs(col, color=None):
+
+    color_pre_str, color_post_str = get_color_pre_and_post_str(color)
 
     with col:
         pv_power = st.number_input(
-            label="Größe der PV Anlage in kW",
+            label=color_pre_str+"Größe der PV Anlage in kW"+color_post_str,
             value=10,
             key=col
         )
 
         annual_fullload_hours = st.number_input(
-            label="Volllaststunden im Jahr",
+            label=color_pre_str+"Jährliche Volllaststunden in h " + color_post_str +""" (*Maßgeblicher Parameter für die jährliche Produktionsmenge, 
+            welche sich aus dem Produkt aus Volllaststunden und Größe der PV Anlage ergibt (h * kW = kWh).*)""",
             value=1000,
             key=col
         )
 
         annual_electricity_production = annual_fullload_hours * pv_power
+
+        st.write("➡ Jährliche Produktionsmenge {:,.2f} kWh".format(annual_electricity_production))
 
         # annual_power_consumption = st.number_input(
         #     label="Eigener Stromverbrauch in kWh",
@@ -28,7 +40,7 @@ def get_technical_inputs(col):
         # )
 
         self_consumption_rate = st.number_input(
-            label="Eigenverbrauchsgrad in %",
+            label=color_pre_str+"Eigenverbrauchsgrad in %"+color_post_str,
             value=10,
             key=col
         ) / 100
@@ -44,41 +56,43 @@ def get_technical_inputs(col):
     return inputs
 
 
-def get_economic_inputs(col):
+def get_economic_inputs(col, color=None):
+
+    color_pre_str, color_post_str = get_color_pre_and_post_str(color)
 
     with col:
         system_cost = st.number_input(
-                label="Kosten der Anlage in EUR",
+                label=color_pre_str+"Kosten der Anlage in EUR"+color_post_str,
                 value=10000,
                 key=col
             )
 
         subsidy = st.number_input(
-                label="Förderung der Anlage in EUR",
+                label=color_pre_str+"Förderung der Anlage in EUR"+color_post_str,
                 value=0,
                 key=col
             )
 
         depreciation_period = st.number_input(
-                label="Abschreibedauer der Anlage in Jahren",
+                label=color_pre_str+"Abschreibedauer der Anlage in Jahren"+color_post_str,
                 value=20,
                 key=col
             )
 
         electricity_rate = st.number_input(
-                label="Kosten des Netzbezugs in EUR/kWh",
+                label=color_pre_str+"Kosten des Netzbezugs in EUR/kWh"+color_post_str,
                 value=0.15,
                 key=col
             )
 
         feed_in_tarif = st.number_input(
-                label="Einspeisetarif in EUR/kWh",
+                label=color_pre_str+"Einspeisetarif in EUR/kWh"+color_post_str,
                 value=0.1,
                 key=col
             )
 
         interest_rate = st.number_input(
-                label="Zinssatz in %",
+                label=color_pre_str+"Zinssatz in %"+color_post_str,
                 value=5,
                 key=col
             )/100
@@ -95,24 +109,26 @@ def get_economic_inputs(col):
     return inputs
 
 
-def get_tax_inputs(col):
+def get_tax_inputs(col, color=None):
+
+    color_pre_str, color_post_str = get_color_pre_and_post_str(color)
 
     with col:
 
         tax_power_threshold = st.number_input(
-                label="Schwellewert Leistung in kWp",
+                label=color_pre_str+"Schwellenwert Leistung in kWp"+color_post_str,
                 value=25,
                 key=col
             )
 
         tax_feedin_threshold = st.number_input(
-                label="Schwellewert Einspeisemenge in kWh",
+                label=color_pre_str+"Schwellenwert Einspeisemenge in kWh (Freibetrag)"+color_post_str,
                 value=12500,
                 key=col
             )
 
         tax_rate = st.number_input(
-                label="Grenzsteuersatz in %",
+                label=color_pre_str+"Grenzsteuersatz in %"+color_post_str,
                 value=42,
                 key=col
             )/100
@@ -172,23 +188,22 @@ def calculate_solar_pv_economics(system_cost, subsidy, pv_power, annual_electric
     # Calculate net cash flow for each year
     years = range(0, depreciation_period+1)
     years_idx = pd.Index(years, name="Jahre")
-    net_cash_flows = pd.DataFrame(index=years_idx, columns=["Investition", "Steuer", "Eigenverbrauch", "Einspeisung"])
+    net_cash_flows = pd.DataFrame(index=years_idx, columns=["Investition in EUR", "Steuer in EUR", "Eigenverbrauch in EUR", "Einspeisung in EUR"])
     tax_bases = pd.Series(index=years_idx)
 
-    net_cash_flows.loc[years[0], "Investition"] = -system_cost
-    net_cash_flows.loc[years[0], "Förderung"] = subsidy
-    net_cash_flows.loc[:, "Eigenverbrauch"] = annual_electricity_savings
-    net_cash_flows.loc[:, "Einspeisung"] = annual_electricity_revenues
+    net_cash_flows.loc[years[0], "Investition in EUR"] = -system_cost
+    net_cash_flows.loc[years[0], "Förderung in EUR"] = subsidy
+    net_cash_flows.loc[:, "Eigenverbrauch in EUR"] = annual_electricity_savings
+    net_cash_flows.loc[:, "Einspeisung in EUR"] = annual_electricity_revenues
 
     if (pv_power > tax_power_threshold) or (annual_electricity_feedin > tax_feedin_threshold):
         tax_base = annual_electricity_revenues - depreciation_expense_for_feedin
         tax = tax_base * tax_rate
-        net_cash_flows.loc[:, "Steuer"] = -tax
+        net_cash_flows.loc[:, "Steuer in EUR"] = -tax
         tax_bases.loc[:] = tax_base
     else:
-        net_cash_flows.loc[:, "Steuer"] = 0
+        net_cash_flows.loc[:, "Steuer in EUR"] = 0
         tax_bases.loc[:] = 0
-
 
     sum_of_cash_flows = net_cash_flows.sum(axis="columns")
     cumsum_of_cash_flows = sum_of_cash_flows.cumsum()
@@ -226,6 +241,14 @@ def format_german_nb(number, decimal=0, unit="EUR"):
     mystr = str_format.replace(",", ' ').replace(".", ',')
     return mystr
 
+
+def rename_columns(dataframe, old_part, new_part):
+    df = dataframe.copy()
+    new_columns = [col.replace(old_part, new_part) for col in df.columns]
+    df.columns = new_columns
+    return df
+
+
 def show_one_scenario(e, key):
 
     col1, col2, col3 = st.columns(3)
@@ -238,7 +261,7 @@ def show_one_scenario(e, key):
     ncf = e["net_cash_flows"]
 
     fig_and_link(
-        ncf / 1e3,
+        rename_columns(ncf, "EUR", "Tausend EUR") / 1e3,
         add_on={
             "line": {"data": ncf.sum(axis="columns").cumsum() / 1e3,
                      "name": "Kummulierter Netto-Cash-Flow", "color": "darkred", "width": 2},
@@ -248,18 +271,19 @@ def show_one_scenario(e, key):
     )
 
     if st.checkbox("Tabelle der Investitionsrechnung anzeigen", False, key=key):
-        st.markdown("Ergebnis der Investitionsrechnung")
-        st.table(ncf.fillna(0).style.format("{:,.0f}"))
+        st.markdown("Ergebnis der Investitionsrechnung im internationalen Zahlenformat (Tausender Trennzeichen ',' und Komma '.'")
+        st.table(ncf.fillna(0).style.format("{:,.2f}"))
 
     st.markdown("### Steuerlich")
     tax_bases = e["tax_bases"]
 
     fig_and_link(
         tax_bases.cumsum() / 1e3,
-        title="Entwicklung der kummulativen steuerlichen Bemessungsgrundlage", unit="Tausend EUR", kind="bar",
+        title="Entwicklung der kummulativen Steuerlichen Bemessungsgrundlage", unit="Tausend EUR", kind="bar",
         download_link=False
     )
 
-    if st.checkbox("Tabelle der steuerlichen Bemessungsgrundlage anzeigen", False, key=key):
-        st.table(tax_bases.fillna(0).cumsum().to_frame("Steuerliche Bemessungsgrundlage").style.format("{:,.0f}"))
+    if st.checkbox("Tabelle der Steuerlichen Bemessungsgrundlage anzeigen", False, key=key):
+        st.markdown("Ergebnis der Investitionsrechnung im internationalen Zahlenformat (Tausender Trennzeichen ',' und Komma '.'")
+        st.table(tax_bases.fillna(0).cumsum().to_frame("Steuerliche Bemessungsgrundlage").style.format("{:,.2f}"))
 
