@@ -31,6 +31,12 @@ image = Image.open('schema.png')
 
 st.image(image, caption='Schematische Beschreibung der Berechnungsmethode. ')
 
+# svg output is not working
+# f = open("schema.svg", "r")
+# lines = f.readlines()
+# line_string = ''.join(lines)
+#
+# render_svg(line_string)
 
 # input data
 st.markdown("## Annahmen")
