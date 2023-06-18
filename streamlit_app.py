@@ -29,7 +29,7 @@ from PIL import Image
 
 image = Image.open('schema.png')
 
-st.image(image, caption='Sunrise by the mountains')
+st.image(image, caption='Schematische Beschreibung der Berechnungsmethode. ')
 
 
 # input data
